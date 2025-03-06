@@ -1,0 +1,19 @@
+{
+  "name": "react-learning-workspace",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Workspace for React learning projects",
+  "scripts": {
+    "dev": "pnpm -r dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint"
+  },
+  "keywords": [
+    "react",
+    "learning",
+    "workspace"
+  ],
+  "author": "",
+  "license": "ISC"
+} 

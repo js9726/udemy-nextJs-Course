@@ -1,0 +1,3 @@
+packages:
+  - 'starting-project'
+  - 'projects/*' 
