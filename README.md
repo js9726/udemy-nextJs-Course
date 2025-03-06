@@ -32,7 +32,7 @@ Each project in this repository will be self-contained and include:
 
 1. Clone this repository:
 ```bash
-git clone [your-repository-url]
+git clone [git@github.com:js9726/udemy-nextJs-Course.git]
 ```
 
 2. Navigate to the specific project directory you want to work on:
