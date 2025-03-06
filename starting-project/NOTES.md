@@ -363,4 +363,274 @@ function Card({ isHighlighted }) {
 - [BEM Naming Convention](http://getbem.com/)
 - [React PropTypes Documentation](https://reactjs.org/docs/typechecking-with-proptypes.html)
 - [CSS-in-JS Solutions](https://styled-components.com/)
-- [React Best Practices](https://reactjs.org/docs/thinking-in-react.html) 
+- [React Best Practices](https://reactjs.org/docs/thinking-in-react.html)
+
+## Component Types Deep Dive
+
+### Presentational Components vs Container Components
+
+#### Presentational Components
+Presentational components are focused solely on how things look. They:
+- Receive data and callbacks exclusively via props
+- Don't have their own state
+- Are purely presentational
+- Are highly reusable
+- Don't know about data fetching or state management
+
+Example of a Presentational Component:
+```jsx
+// UserCard.jsx - Presentational Component
+function UserCard({ name, avatar, role, onEdit, onDelete }) {
+  return (
+    <div className="user-card">
+      <img src={avatar} alt={name} />
+      <h3>{name}</h3>
+      <p>{role}</p>
+      <div className="actions">
+        <button onClick={onEdit}>Edit</button>
+        <button onClick={onDelete}>Delete</button>
+      </div>
+    </div>
+  );
+}
+
+// Usage
+<UserCard 
+  name="John Doe"
+  avatar="/images/john.jpg"
+  role="Developer"
+  onEdit={() => console.log('Edit clicked')}
+  onDelete={() => console.log('Delete clicked')}
+/>
+```
+
+#### Container Components
+Container components are focused on how things work. They:
+- Handle data fetching
+- Manage state
+- Handle business logic
+- Pass data to presentational components
+- Are less reusable
+- Know about data fetching and state management
+
+Example of a Container Component:
+```jsx
+// UserListContainer.jsx - Container Component
+function UserListContainer() {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Data fetching logic
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('https://api.example.com/users');
+        const data = await response.json();
+        setUsers(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const handleEdit = (userId) => {
+    // Business logic for editing
+    console.log('Editing user:', userId);
+  };
+
+  const handleDelete = (userId) => {
+    // Business logic for deleting
+    console.log('Deleting user:', userId);
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
+  return (
+    <div className="user-list">
+      {users.map(user => (
+        <UserCard
+          key={user.id}
+          name={user.name}
+          avatar={user.avatar}
+          role={user.role}
+          onEdit={() => handleEdit(user.id)}
+          onDelete={() => handleDelete(user.id)}
+        />
+      ))}
+    </div>
+  );
+}
+```
+
+### When to Use Each Type
+
+#### Use Presentational Components When:
+1. You need reusable UI components
+2. The component only needs to display data
+3. You want to maintain separation of concerns
+4. You need to test UI components in isolation
+5. You want to keep components pure and predictable
+
+Example Use Case:
+```jsx
+// Button.jsx - Presentational
+function Button({ variant, children, onClick }) {
+  return (
+    <button 
+      className={`button button--${variant}`}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+}
+
+// Card.jsx - Presentational
+function Card({ title, content, image }) {
+  return (
+    <div className="card">
+      <img src={image} alt={title} />
+      <h3>{title}</h3>
+      <p>{content}</p>
+    </div>
+  );
+}
+```
+
+#### Use Container Components When:
+1. You need to fetch data
+2. You need to manage state
+3. You need to handle complex business logic
+4. You need to coordinate multiple presentational components
+5. You need to handle side effects
+
+Example Use Case:
+```jsx
+// BlogContainer.jsx - Container
+function BlogContainer() {
+  const [posts, setPosts] = useState([]);
+  const [category, setCategory] = useState('all');
+
+  useEffect(() => {
+    // Fetch posts based on category
+    fetchPosts(category).then(setPosts);
+  }, [category]);
+
+  return (
+    <div className="blog">
+      <CategorySelector 
+        value={category}
+        onChange={setCategory}
+      />
+      <div className="posts-grid">
+        {posts.map(post => (
+          <Card
+            key={post.id}
+            title={post.title}
+            content={post.excerpt}
+            image={post.image}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+### Best Practices for Component Separation
+
+1. **Single Responsibility**
+   - Presentational components should only handle rendering
+   - Container components should only handle data and logic
+
+2. **Props Interface**
+   - Keep presentational component props simple and focused
+   - Use PropTypes or TypeScript for type checking
+
+3. **State Management**
+   - Keep state in container components
+   - Pass state down as props to presentational components
+
+4. **Reusability**
+   - Make presentational components as reusable as possible
+   - Keep container components specific to their use case
+
+5. **Testing**
+   - Presentational components are easier to test
+   - Container components require more setup for testing
+
+### Real-World Example: Todo Application
+
+```jsx
+// TodoItem.jsx - Presentational
+function TodoItem({ text, completed, onToggle, onDelete }) {
+  return (
+    <div className={`todo-item ${completed ? 'completed' : ''}`}>
+      <input
+        type="checkbox"
+        checked={completed}
+        onChange={onToggle}
+      />
+      <span>{text}</span>
+      <button onClick={onDelete}>Delete</button>
+    </div>
+  );
+}
+
+// TodoList.jsx - Container
+function TodoList() {
+  const [todos, setTodos] = useState([]);
+  const [newTodo, setNewTodo] = useState('');
+
+  const addTodo = () => {
+    if (newTodo.trim()) {
+      setTodos([...todos, {
+        id: Date.now(),
+        text: newTodo,
+        completed: false
+      }]);
+      setNewTodo('');
+    }
+  };
+
+  const toggleTodo = (id) => {
+    setTodos(todos.map(todo =>
+      todo.id === id
+        ? { ...todo, completed: !todo.completed }
+        : todo
+    ));
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(todos.filter(todo => todo.id !== id));
+  };
+
+  return (
+    <div className="todo-list">
+      <div className="add-todo">
+        <input
+          value={newTodo}
+          onChange={(e) => setNewTodo(e.target.value)}
+          placeholder="Add new todo"
+        />
+        <button onClick={addTodo}>Add</button>
+      </div>
+      {todos.map(todo => (
+        <TodoItem
+          key={todo.id}
+          text={todo.text}
+          completed={todo.completed}
+          onToggle={() => toggleTodo(todo.id)}
+          onDelete={() => deleteTodo(todo.id)}
+        />
+      ))}
+    </div>
+  );
+}
+``` 
