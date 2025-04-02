@@ -1,13 +1,22 @@
 import Post from './Post';
+import NewPost from './NewPost';
 import classes from './PostsList.module.css';
+import Modal from './Modal';
 
-function PostList() {
-    const People = "James"
+function PostList( {isPosting,onStopPosting} ) {
+
     return(
-        <ul id="" className= {classes.posts}>
-            <Post author="Jie" body="React.js is awesome"/>
-            <Post author="Wenedy" body="is awesome"/>
-        </ul>
+        <>
+            {isPosting ?(<Modal onClose={onStopPosting}>
+                <NewPost  
+                    onCancel={onStopPosting}/>
+            </Modal>
+            ) : false}
+            <ul id="" className= {classes.posts}>
+                <Post author={enteredAuthor} body={enteredBody}/>
+
+            </ul>
+        </>
     );
     
 }
